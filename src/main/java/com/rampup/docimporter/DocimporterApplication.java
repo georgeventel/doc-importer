@@ -8,8 +8,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients
 public class DocimporterApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DocimporterApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(DocimporterApplication.class, args);
+    }
 
 }
