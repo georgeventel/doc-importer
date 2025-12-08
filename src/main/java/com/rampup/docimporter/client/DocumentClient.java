@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-@FeignClient(name = "gcp", url = "${gcp.service.url}")
+@FeignClient(name = "DocumentProvider", url = "${document.source.url}")
 public interface DocumentClient {
     @GetMapping("/processed")
     List<Document> getDocuments();
