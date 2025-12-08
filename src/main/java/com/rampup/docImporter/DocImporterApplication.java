@@ -1,4 +1,4 @@
-package com.rampup.docimporter;
+package com.rampup.docImporter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class DocimporterApplication {
+public class DocImporterApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DocimporterApplication.class, args);
+        SpringApplication.run(DocImporterApplication.class, args);
     }
 
 }

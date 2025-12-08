@@ -1,4 +1,4 @@
-package com.rampup.docimporter.dto;
+package com.rampup.docImporter.dto;
 
 import lombok.Data;
 

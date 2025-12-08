@@ -1,6 +1,6 @@
-package com.rampup.docimporter.client;
+package com.rampup.docImporter.client;
 
-import com.rampup.docimporter.dto.Document;
+import com.rampup.docImporter.dto.Document;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 
