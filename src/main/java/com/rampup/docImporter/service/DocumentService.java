@@ -9,6 +9,7 @@ import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
 import com.rampup.docImporter.repository.DocumentFeedbackRepository;
 import com.rampup.docImporter.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentClient documentClient;
@@ -27,6 +29,7 @@ public class DocumentService {
 
         Instant startTime = Instant.now();// start timer
         DocumentImportFeedback documentImportFeedback = new DocumentImportFeedback();
+        log.info("Start importing documents");
         try {
             List<DocumentDto> importedDocumentDtos = documentClient.getDocuments().getItems();
             List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
@@ -47,8 +50,9 @@ public class DocumentService {
             documentImportFeedback.setImportDurationMs(duration);
 
             documentFeedbackRepository.save(documentImportFeedback);
+            log.info("End importing documents. Imported {} new documents", importedDocumentDtos.size());
 
-        } catch (Exception _) {
+        } catch (Exception e) {
             Instant endTime = Instant.now();// stop timer
             Long duration = Duration.between(startTime, endTime).toMillis();
 
@@ -58,6 +62,7 @@ public class DocumentService {
             documentImportFeedback.setImportDurationMs(duration);
 
             documentFeedbackRepository.save(documentImportFeedback);
+            log.error("Error occurred during document import: ", e);
 
 
         }
