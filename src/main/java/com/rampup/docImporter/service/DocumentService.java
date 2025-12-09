@@ -26,48 +26,48 @@ public class DocumentService {
     private final DocumentFeedbackRepository documentFeedbackRepository;
 
     public ImportedResultDto importDocuments() {
-
         Instant startTime = Instant.now();// start timer
         DocumentImportFeedback documentImportFeedback = new DocumentImportFeedback();
         log.info("Start importing documents");
         try {
-            List<DocumentDto> importedDocumentDtos = documentClient.getDocuments().getItems();
-            List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
-
-            importedDocumentDtos = importedDocumentDtos.stream()
-                    .filter(documentDto -> !alreadyImportedSpIds.contains(documentDto.getSharepointId()))
-                    .toList();
-
-            importedDocumentDtos.forEach(documentDto ->
-                    documentRepository.save(DocumentDtoToDocumentEntity.map(documentDto)));
-
+            List<DocumentDto> importedDocumentDtos = getDocumentDtos();
             Instant endTime = Instant.now();// stop timer
             Long duration = Duration.between(startTime, endTime).toMillis();
 
-            documentImportFeedback.setStatus("SUCCESS");
-            documentImportFeedback.setImportedCount(importedDocumentDtos.size());
-            documentImportFeedback.setExecutedAt(LocalDateTime.now());
-            documentImportFeedback.setImportDurationMs(duration);
+            saveImportFeedback("SUCCESS", importedDocumentDtos.size(), duration, documentImportFeedback);
 
-            documentFeedbackRepository.save(documentImportFeedback);
             log.info("End importing documents. Imported {} new documents", importedDocumentDtos.size());
-
         } catch (Exception e) {
             Instant endTime = Instant.now();// stop timer
             Long duration = Duration.between(startTime, endTime).toMillis();
 
-            documentImportFeedback.setStatus("FAILED");
-            documentImportFeedback.setImportedCount(0);
-            documentImportFeedback.setExecutedAt(LocalDateTime.now());
-            documentImportFeedback.setImportDurationMs(duration);
+            saveImportFeedback("FAILED", 0, duration, documentImportFeedback);
 
-            documentFeedbackRepository.save(documentImportFeedback);
             log.error("Error occurred during document import: ", e);
-
-
         }
-
-
         return ImportFeedbackEntityToImportFeedbackDto.map(documentImportFeedback);
+    }
+
+    private List<DocumentDto> getDocumentDtos() {
+        List<DocumentDto> importedDocumentDtos = documentClient.getDocuments().getItems();
+        List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
+
+        importedDocumentDtos = importedDocumentDtos.stream()
+                .filter(documentDto -> !alreadyImportedSpIds.contains(documentDto.getSharepointId()))
+                .toList();
+
+        importedDocumentDtos.forEach(documentDto ->
+                documentRepository.save(DocumentDtoToDocumentEntity.map(documentDto)));
+
+        return importedDocumentDtos;
+    }
+
+    private void saveImportFeedback(String importResult, Integer size, Long duration, DocumentImportFeedback documentImportFeedback) {
+        documentImportFeedback.setStatus(importResult);
+        documentImportFeedback.setImportedCount(size);
+        documentImportFeedback.setExecutedAt(LocalDateTime.now());
+        documentImportFeedback.setImportDurationMs(duration);
+        documentFeedbackRepository.save(documentImportFeedback);
+
     }
 }
