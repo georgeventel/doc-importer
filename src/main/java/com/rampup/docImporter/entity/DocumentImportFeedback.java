@@ -11,10 +11,9 @@ public class DocumentImportFeedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String documentName;
     private String status; // e.g., "SUCCESS", "FAILED"
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
-    @OneToOne
-    private ImportedDocument importedDocument;
+    private LocalDateTime executedAt;
+    private Long importDurationMs;
+    private Integer importedCount;
+
 }
