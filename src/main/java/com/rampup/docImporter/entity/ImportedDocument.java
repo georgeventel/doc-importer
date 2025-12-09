@@ -12,8 +12,7 @@ public class ImportedDocument {
     String sharepointId;
     String documentName;
     String docType;
+    @Column(length=10_000)
     String sharedLink;
-    @OneToOne
-    private DocumentImportFeedback documentImportFeedback;
 
 }
