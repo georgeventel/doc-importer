@@ -1,20 +1,19 @@
 package com.rampup.docImporter.service;
 
 import com.rampup.docImporter.client.DocumentClient;
-import com.rampup.docImporter.dto.DocumentDto;
-import com.rampup.docImporter.dto.ImportedResultDto;
+import com.rampup.docImporter.dto.DocumentImportFeedbackDTO;
+import com.rampup.docImporter.dto.ImportedDocumentDTO;
 import com.rampup.docImporter.entity.DocumentImportFeedback;
 import com.rampup.docImporter.mapper.DocumentDtoToDocumentEntity;
 import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
-import com.rampup.docImporter.repository.DocumentFeedbackRepository;
 import com.rampup.docImporter.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,51 +22,41 @@ import java.util.List;
 public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentClient documentClient;
-    private final DocumentFeedbackRepository documentFeedbackRepository;
+    private final DocumentImportFeedbackService documentImportFeedbackService;
 
-    public ImportedResultDto importDocuments() {
+    public DocumentImportFeedbackDTO importDocuments() {
         Instant startTime = Instant.now();// start timer
         DocumentImportFeedback documentImportFeedback = new DocumentImportFeedback();
+        String importFeedback = StringUtils.EMPTY;
+        int size = 0;
         log.info("Start importing documents");
         try {
-            List<DocumentDto> importedDocumentDtos = getDocumentDtos();
-            Instant endTime = Instant.now();// stop timer
-            Long duration = Duration.between(startTime, endTime).toMillis();
-
-            saveImportFeedback("SUCCESS", importedDocumentDtos.size(), duration, documentImportFeedback);
-
-            log.info("End importing documents. Imported {} new documents", importedDocumentDtos.size());
+            List<ImportedDocumentDTO> importedImportedDocumentDTOS = getDocumentDtos();
+            importFeedback = "SUCCESS";
+            size = importedImportedDocumentDTOS.size();
+            log.info("End importing documents. Imported {} new documents", importedImportedDocumentDTOS.size());
         } catch (Exception e) {
+            importFeedback = "FAILED";
+            log.error("Error occurred during document import: ", e);
+        } finally {
             Instant endTime = Instant.now();// stop timer
             Long duration = Duration.between(startTime, endTime).toMillis();
 
-            saveImportFeedback("FAILED", 0, duration, documentImportFeedback);
-
-            log.error("Error occurred during document import: ", e);
+            documentImportFeedbackService.saveImportFeedback(importFeedback, size, duration, documentImportFeedback);
         }
+
         return ImportFeedbackEntityToImportFeedbackDto.map(documentImportFeedback);
     }
 
-    private List<DocumentDto> getDocumentDtos() {
-        List<DocumentDto> importedDocumentDtos = documentClient.getDocuments().getItems();
+    private List<ImportedDocumentDTO> getDocumentDtos() {
+        List<ImportedDocumentDTO> importedImportedDocumentDTOS = documentClient.getDocuments().getItems();
         List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
 
-        importedDocumentDtos = importedDocumentDtos.stream()
-                .filter(documentDto -> !alreadyImportedSpIds.contains(documentDto.getSharepointId()))
-                .toList();
+        importedImportedDocumentDTOS = importedImportedDocumentDTOS.stream().filter(importedDocumentDTO -> !alreadyImportedSpIds.contains(importedDocumentDTO.getSharepointId())).toList();
 
-        importedDocumentDtos.forEach(documentDto ->
-                documentRepository.save(DocumentDtoToDocumentEntity.map(documentDto)));
+        importedImportedDocumentDTOS.forEach(importedDocumentDTO -> documentRepository.save(DocumentDtoToDocumentEntity.map(importedDocumentDTO)));
 
-        return importedDocumentDtos;
+        return importedImportedDocumentDTOS;
     }
 
-    private void saveImportFeedback(String importResult, Integer size, Long duration, DocumentImportFeedback documentImportFeedback) {
-        documentImportFeedback.setStatus(importResult);
-        documentImportFeedback.setImportedCount(size);
-        documentImportFeedback.setExecutedAt(LocalDateTime.now());
-        documentImportFeedback.setImportDurationMs(duration);
-        documentFeedbackRepository.save(documentImportFeedback);
-
-    }
 }

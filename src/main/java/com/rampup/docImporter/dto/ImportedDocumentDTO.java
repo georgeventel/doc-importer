@@ -3,7 +3,7 @@ package com.rampup.docImporter.dto;
 import lombok.Data;
 
 @Data
-public class DocumentDto {
+public class ImportedDocumentDTO {
     private String sharepointId;
     private String documentName;
     private String docType;

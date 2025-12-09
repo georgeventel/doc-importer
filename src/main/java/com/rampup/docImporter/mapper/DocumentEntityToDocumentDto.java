@@ -1,11 +1,11 @@
 package com.rampup.docImporter.mapper;
 
-import com.rampup.docImporter.dto.DocumentDto;
+import com.rampup.docImporter.dto.ImportedDocumentDTO;
 import com.rampup.docImporter.entity.ImportedDocument;
 
 public final class DocumentEntityToDocumentDto {
-    public static DocumentDto map(ImportedDocument entity){
-        DocumentDto dto = new DocumentDto();
+    public static ImportedDocumentDTO map(ImportedDocument entity) {
+        ImportedDocumentDTO dto = new ImportedDocumentDTO();
         dto.setSharepointId(entity.getSharepointId());
         dto.setDocumentName(entity.getDocumentName());
         dto.setDocType(entity.getDocType());
