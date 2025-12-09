@@ -15,7 +15,7 @@ public class DocumentController {
     private final DocumentService documentService;
 
     @PostMapping("/start")
-    public ResponseEntity<List<ImportedResultDto>> startImport(){
+    public ResponseEntity<ImportedResultDto> startImport(){
         return ResponseEntity.ok(documentService.importDocuments());
     }
 }
