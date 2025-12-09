@@ -5,6 +5,7 @@ import com.rampup.docImporter.dto.DocumentDto;
 import com.rampup.docImporter.dto.ImportedResultDto;
 import com.rampup.docImporter.entity.DocumentImportFeedback;
 import com.rampup.docImporter.mapper.DocumentDtoToDocumentEntity;
+import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
 import com.rampup.docImporter.repository.DocumentFeedbackRepository;
 import com.rampup.docImporter.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,12 @@ public class DocumentService {
         DocumentImportFeedback documentImportFeedback = new DocumentImportFeedback();
         try {
             List<DocumentDto> importedDocumentDtos = documentClient.getDocuments().getItems();
+            List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
+
+            importedDocumentDtos = importedDocumentDtos.stream()
+                    .filter(documentDto -> !alreadyImportedSpIds.contains(documentDto.getSharepointId()))
+                    .toList();
+
             importedDocumentDtos.forEach(documentDto ->
                     documentRepository.save(DocumentDtoToDocumentEntity.map(documentDto)));
 
@@ -56,6 +63,6 @@ public class DocumentService {
         }
 
 
-        return null;
+        return ImportFeedbackEntityToImportFeedbackDto.map(documentImportFeedback);
     }
 }
