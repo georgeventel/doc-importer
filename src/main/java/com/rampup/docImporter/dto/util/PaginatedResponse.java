@@ -9,6 +9,6 @@ public class PaginatedResponse<T> {
     private List<T> feedback;
     private int currentPage;
     private int totalPages;
-    private int totalElements;
+    private long totalElements;
     private int pageSize;
 }

@@ -1,11 +1,19 @@
 package com.rampup.docImporter.service;
 
+import com.rampup.docImporter.dto.DocumentImportFeedbackDTO;
+import com.rampup.docImporter.dto.util.PaginatedResponse;
 import com.rampup.docImporter.entity.DocumentImportFeedback;
+import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
 import com.rampup.docImporter.repository.DocumentFeedbackRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,5 +27,23 @@ public class DocumentImportFeedbackService {
         documentImportFeedback.setImportDurationMs(duration);
         documentFeedbackRepository.save(documentImportFeedback);
 
+    }
+
+    public PaginatedResponse<DocumentImportFeedbackDTO> getFeedbackPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page,size);
+        Page<DocumentImportFeedback> feedbackPage = documentFeedbackRepository.findAll(pageable);
+
+        PaginatedResponse<DocumentImportFeedbackDTO> response = new PaginatedResponse<>();
+        List<DocumentImportFeedbackDTO> feedbackDTOs = new ArrayList<>();
+        feedbackPage.getContent().forEach(feedback ->
+                feedbackDTOs.add(ImportFeedbackEntityToImportFeedbackDto.map(feedback)));
+
+        response.setFeedback(feedbackDTOs);
+        response.setCurrentPage(feedbackPage.getNumber());
+        response.setTotalPages(feedbackPage.getTotalPages());
+        response.setTotalElements(feedbackPage.getTotalElements());
+        response.setPageSize(feedbackPage.getSize());
+
+        return response;
     }
 }
