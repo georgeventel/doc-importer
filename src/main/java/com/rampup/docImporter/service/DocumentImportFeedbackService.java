@@ -2,6 +2,7 @@ package com.rampup.docImporter.service;
 
 import com.rampup.docImporter.dto.DocumentImportFeedbackDTO;
 import com.rampup.docImporter.dto.util.PaginatedResponse;
+import com.rampup.docImporter.dto.util.SortableFields;
 import com.rampup.docImporter.entity.DocumentImportFeedback;
 import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
 import com.rampup.docImporter.repository.DocumentFeedbackRepository;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,8 +31,8 @@ public class DocumentImportFeedbackService {
 
     }
 
-    public PaginatedResponse<DocumentImportFeedbackDTO> getFeedbackPaginated(int page, int size) {
-        Pageable pageable = PageRequest.of(page,size);
+    public PaginatedResponse<DocumentImportFeedbackDTO> getFeedbackPaginated(int page, int size, SortableFields sortBy) {
+        Pageable pageable = PageRequest.of(page,size, Sort.by(Sort.Direction.DESC, sortBy.getFieldName()));
         Page<DocumentImportFeedback> feedbackPage = documentFeedbackRepository.findAll(pageable);
 
         PaginatedResponse<DocumentImportFeedbackDTO> response = new PaginatedResponse<>();

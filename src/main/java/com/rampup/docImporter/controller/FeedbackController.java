@@ -2,6 +2,7 @@ package com.rampup.docImporter.controller;
 
 import com.rampup.docImporter.dto.DocumentImportFeedbackDTO;
 import com.rampup.docImporter.dto.util.PaginatedResponse;
+import com.rampup.docImporter.dto.util.SortableFields;
 import com.rampup.docImporter.service.DocumentImportFeedbackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +17,10 @@ public class FeedbackController {
     @GetMapping("/feedback")
     public PaginatedResponse<DocumentImportFeedbackDTO> getFeedback(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "executedAt") String sortByLiteral
     ){
-        return documentImportFeedbackService.getFeedbackPaginated(page, size);
+        SortableFields sortBy = SortableFields.from(sortByLiteral);
+        return documentImportFeedbackService.getFeedbackPaginated(page, size, sortBy);
     }
 }
