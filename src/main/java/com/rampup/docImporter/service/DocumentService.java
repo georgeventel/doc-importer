@@ -16,7 +16,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,18 +56,38 @@ public class DocumentService {
     }
 
     private List<ImportedDocumentDTO> importDocumentDtos() {
-        List<ImportedDocumentDTO> importedImportedDocumentDTOS = documentClient.getDocuments().getItems();
-        List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
+        List<ImportedDocumentDTO> incomingDocs =
+                documentClient.getDocuments().getItems();
 
-        importedImportedDocumentDTOS = importedImportedDocumentDTOS.stream()
-                .filter(importedDocumentDTO ->
-                        !alreadyImportedSpIds.contains(importedDocumentDTO.getSharepointId())).toList();
+        Map<String, ImportedDocument> existingBySpId =
+                documentRepository.findAll().stream()
+                        .collect(Collectors.toMap(
+                                ImportedDocument::getSharepointId,
+                                Function.identity()
+                        ));
 
-        importedImportedDocumentDTOS.forEach(importedDocumentDTO ->
-                documentRepository.save(DocumentDtoToDocumentEntity.map(importedDocumentDTO)));
+        List<ImportedDocumentDTO> processed = new ArrayList<>();
 
-        return importedImportedDocumentDTOS;
+        for (ImportedDocumentDTO dto : incomingDocs) {
+            ImportedDocument entity = existingBySpId.get(dto.getSharepointId());
+
+            if (entity == null) {
+                // NEW document
+                entity = DocumentDtoToDocumentEntity.map(dto);
+                documentRepository.save(entity);
+                processed.add(dto);
+            } else {
+                // EXISTING document, update only if changed
+                if (applyChanges(entity, dto)) {
+                    documentRepository.save(entity);
+                    processed.add(dto);
+                }
+            }
+        }
+
+        return processed;
     }
+
 
     public ImportedDocumentDTO createDocument(ImportedDocumentDTO doc) {
         log.info("Created document with name: {}", doc.getDocumentName());
@@ -78,17 +103,15 @@ public class DocumentService {
     public ImportedDocumentDTO updateDocument(Long id, ImportedDocumentDTO doc) {
         log.info("Updating document with id: {}", id);
 
-        return documentRepository.findById(id)
-                .map(existingDocument -> {
-                    existingDocument.setDocumentName(doc.getDocumentName());
-                    existingDocument.setSharepointId(doc.getSharepointId());
-                    existingDocument.setSharedLink(doc.getSharedLink());
-                    existingDocument.setDocType(doc.getDocType());
-                    documentRepository.save(existingDocument);
-                    return DocumentEntityToDocumentDto.map(existingDocument);
-                })
+        ImportedDocument entity = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Document not found with id: " + id));
+
+        applyChanges(entity, doc);
+        documentRepository.save(entity);
+
+        return DocumentEntityToDocumentDto.map(entity);
     }
+
 
     public void deleteDocument(Long id) {
         log.info("Delete document with id: {}", id);
@@ -101,4 +124,28 @@ public class DocumentService {
         return DocumentEntityToDocumentDto.map(documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Document not found with id: " + id)));
     }
+
+    private boolean applyChanges(ImportedDocument entity, ImportedDocumentDTO dto) {
+        boolean changed = false;
+
+        if (!Objects.equals(entity.getDocumentName(), dto.getDocumentName())) {
+            entity.setDocumentName(dto.getDocumentName());
+            changed = true;
+        }
+        if (!Objects.equals(entity.getSharepointId(), dto.getSharepointId())) {
+            entity.setSharepointId(dto.getSharepointId());
+            changed = true;
+        }
+        if (!Objects.equals(entity.getSharedLink(), dto.getSharedLink())) {
+            entity.setSharedLink(dto.getSharedLink());
+            changed = true;
+        }
+        if (!Objects.equals(entity.getDocType(), dto.getDocType())) {
+            entity.setDocType(dto.getDocType());
+            changed = true;
+        }
+
+        return changed;
+    }
+
 }
