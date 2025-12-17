@@ -31,7 +31,7 @@ public class DocumentService {
         int size = 0;
         log.info("Start importing documents");
         try {
-            List<ImportedDocumentDTO> importedImportedDocumentDTOS = getDocumentDtos();
+            List<ImportedDocumentDTO> importedImportedDocumentDTOS = importDocumentDtos();
             importFeedback = "SUCCESS";
             size = importedImportedDocumentDTOS.size();
             log.info("End importing documents. Imported {} new documents", importedImportedDocumentDTOS.size());
@@ -48,13 +48,16 @@ public class DocumentService {
         return ImportFeedbackEntityToImportFeedbackDto.map(documentImportFeedback);
     }
 
-    private List<ImportedDocumentDTO> getDocumentDtos() {
+    private List<ImportedDocumentDTO> importDocumentDtos() {
         List<ImportedDocumentDTO> importedImportedDocumentDTOS = documentClient.getDocuments().getItems();
         List<String> alreadyImportedSpIds = documentRepository.findAllSharepointIds();
 
-        importedImportedDocumentDTOS = importedImportedDocumentDTOS.stream().filter(importedDocumentDTO -> !alreadyImportedSpIds.contains(importedDocumentDTO.getSharepointId())).toList();
+        importedImportedDocumentDTOS = importedImportedDocumentDTOS.stream()
+                .filter(importedDocumentDTO ->
+                        !alreadyImportedSpIds.contains(importedDocumentDTO.getSharepointId())).toList();
 
-        importedImportedDocumentDTOS.forEach(importedDocumentDTO -> documentRepository.save(DocumentDtoToDocumentEntity.map(importedDocumentDTO)));
+        importedImportedDocumentDTOS.forEach(importedDocumentDTO ->
+                documentRepository.save(DocumentDtoToDocumentEntity.map(importedDocumentDTO)));
 
         return importedImportedDocumentDTOS;
     }
