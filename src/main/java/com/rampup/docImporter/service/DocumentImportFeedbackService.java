@@ -34,7 +34,7 @@ public class DocumentImportFeedbackService {
     }
 
     public PaginatedResponse<DocumentImportFeedbackDTO> getFeedbackPaginated(int page, int size, SortableFields sortBy) {
-        Pageable pageable = PageRequest.of(page,size, Sort.by(Sort.Direction.DESC, sortBy.getFieldName()));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy.getFieldName()));
         Page<DocumentImportFeedback> feedbackPage = documentFeedbackRepository.findAll(pageable);
 
         PaginatedResponse<DocumentImportFeedbackDTO> response = new PaginatedResponse<>();

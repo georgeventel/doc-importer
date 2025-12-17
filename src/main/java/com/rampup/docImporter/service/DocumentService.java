@@ -4,13 +4,14 @@ import com.rampup.docImporter.client.DocumentClient;
 import com.rampup.docImporter.dto.DocumentImportFeedbackDTO;
 import com.rampup.docImporter.dto.ImportedDocumentDTO;
 import com.rampup.docImporter.entity.DocumentImportFeedback;
+import com.rampup.docImporter.entity.ImportedDocument;
 import com.rampup.docImporter.mapper.DocumentDtoToDocumentEntity;
+import com.rampup.docImporter.mapper.DocumentEntityToDocumentDto;
 import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
 import com.rampup.docImporter.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -63,19 +64,41 @@ public class DocumentService {
         return importedImportedDocumentDTOS;
     }
 
-    public @Nullable DocumentImportFeedbackDTO createDocument() {
-        return null;
+    public ImportedDocumentDTO createDocument(ImportedDocumentDTO doc) {
+        log.info("Created document with name: {}", doc.getDocumentName());
+        documentRepository.save(DocumentDtoToDocumentEntity.map(doc));
+        return doc;
     }
 
-    public @Nullable List<DocumentImportFeedbackDTO> listDocuments() {
-        return null;
+    public List<ImportedDocument> listDocuments() {
+        log.info("Listing documents");
+        return documentRepository.findAll();
     }
 
-    public @Nullable DocumentImportFeedbackDTO updateDocument(Long id) {
-        return null;
+    public ImportedDocumentDTO updateDocument(Long id, ImportedDocumentDTO doc) {
+        log.info("Updating document with id: {}", id);
+
+        return documentRepository.findById(id)
+                .map(existingDocument -> {
+                    existingDocument.setDocumentName(doc.getDocumentName());
+                    existingDocument.setSharepointId(doc.getSharepointId());
+                    existingDocument.setSharedLink(doc.getSharedLink());
+                    existingDocument.setDocType(doc.getDocType());
+                    documentRepository.save(existingDocument);
+                    return DocumentEntityToDocumentDto.map(existingDocument);
+                })
+                .orElseThrow(() -> new RuntimeException("Document not found with id: " + id));
     }
 
     public void deleteDocument(Long id) {
-        // TODO document why this method is empty
+        log.info("Delete document with id: {}", id);
+        documentRepository.deleteById(id);
+    }
+
+
+    public ImportedDocumentDTO getDocumentById(Long id) {
+        log.info("Get document with id: {}", id);
+        return DocumentEntityToDocumentDto.map(documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found with id: " + id)));
     }
 }
