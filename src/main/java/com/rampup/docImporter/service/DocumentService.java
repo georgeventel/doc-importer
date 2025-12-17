@@ -10,6 +10,7 @@ import com.rampup.docImporter.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -62,4 +63,19 @@ public class DocumentService {
         return importedImportedDocumentDTOS;
     }
 
+    public @Nullable DocumentImportFeedbackDTO createDocument() {
+        return null;
+    }
+
+    public @Nullable List<DocumentImportFeedbackDTO> listDocuments() {
+        return null;
+    }
+
+    public @Nullable DocumentImportFeedbackDTO updateDocument(Long id) {
+        return null;
+    }
+
+    public void deleteDocument(Long id) {
+        // TODO document why this method is empty
+    }
 }
