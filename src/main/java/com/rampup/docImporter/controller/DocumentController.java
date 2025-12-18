@@ -22,7 +22,7 @@ public class DocumentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(documentService.createDocument(document));
     }
 
-    @GetMapping("/documents")
+    @GetMapping
     public ResponseEntity<List<ImportedDocument>> listDocuments() {
         return ResponseEntity.ok(documentService.getAllDocuments());
     }
