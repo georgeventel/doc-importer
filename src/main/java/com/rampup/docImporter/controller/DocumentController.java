@@ -1,6 +1,5 @@
 package com.rampup.docImporter.controller;
 
-import com.rampup.docImporter.dto.DocumentImportFeedbackDTO;
 import com.rampup.docImporter.dto.ImportedDocumentDTO;
 import com.rampup.docImporter.entity.ImportedDocument;
 import com.rampup.docImporter.service.DocumentService;
@@ -13,40 +12,34 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/documents")
+@RequestMapping("/api/document")
 public class DocumentController {
     private final DocumentService documentService;
 
-    @PostMapping("/start")
-    public ResponseEntity<DocumentImportFeedbackDTO> startImport() {
-        return ResponseEntity.ok(documentService.importDocuments());
-    }
-
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<ImportedDocumentDTO> createDocument(
             @RequestBody ImportedDocumentDTO document) {
         return ResponseEntity.status(HttpStatus.CREATED).body(documentService.createDocument(document));
     }
 
-    @GetMapping("/list")
+    @GetMapping("/documents")
     public ResponseEntity<List<ImportedDocument>> listDocuments() {
-        return ResponseEntity.ok(documentService.listDocuments());
+        return ResponseEntity.ok(documentService.getAllDocuments());
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ImportedDocumentDTO> updateDocument(
             @PathVariable Long id,
             @RequestBody ImportedDocumentDTO document) {
         return ResponseEntity.ok(documentService.updateDocument(id, document));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
-        documentService.deleteDocument(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteDocument(@PathVariable Long id) {
+        return ResponseEntity.ok(documentService.deleteDocument(id));
     }
 
-    @GetMapping("/get/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ImportedDocumentDTO> getDocument(@PathVariable Long id) {
         return ResponseEntity.ok(documentService.getDocumentById(id));
     }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -74,12 +75,17 @@ public class DocumentService {
             if (entity == null) {
                 // NEW document
                 entity = DocumentDtoToDocumentEntity.map(dto);
+                entity.setCreatedDate(LocalDateTime.now());
+                entity.setLastUpdateTime(LocalDateTime.now());
                 documentRepository.save(entity);
+                log.info("Saved new document: {}", dto.getDocumentName());
                 processed.add(dto);
             } else {
                 // EXISTING document, update only if changed
                 if (applyChanges(entity, dto)) {
+                    entity.setLastUpdateTime(LocalDateTime.now());
                     documentRepository.save(entity);
+                    log.info("Updated document: {}", dto.getDocumentName());
                     processed.add(dto);
                 }
             }
@@ -95,7 +101,7 @@ public class DocumentService {
         return doc;
     }
 
-    public List<ImportedDocument> listDocuments() {
+    public List<ImportedDocument> getAllDocuments() {
         log.info("Listing documents");
         return documentRepository.findAll();
     }
@@ -107,15 +113,17 @@ public class DocumentService {
                 .orElseThrow(() -> new RuntimeException("Document not found with id: " + id));
 
         applyChanges(entity, doc);
+        entity.setLastUpdateTime(LocalDateTime.now());
         documentRepository.save(entity);
 
         return DocumentEntityToDocumentDto.map(entity);
     }
 
 
-    public void deleteDocument(Long id) {
+    public String deleteDocument(Long id) {
         log.info("Delete document with id: {}", id);
         documentRepository.deleteById(id);
+        return "Document deleted successfully";
     }
 
 
