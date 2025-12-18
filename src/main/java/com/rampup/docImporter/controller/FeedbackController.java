@@ -19,7 +19,7 @@ public class FeedbackController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "executedAt") String sortByLiteral
-    ){
+    ) {
         SortableFields sortBy = SortableFields.from(sortByLiteral);
         return documentImportFeedbackService.getFeedbackPaginated(page, size, sortBy);
     }

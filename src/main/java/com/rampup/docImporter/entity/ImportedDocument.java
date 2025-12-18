@@ -3,6 +3,8 @@ package com.rampup.docImporter.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 public class ImportedDocument {
@@ -14,5 +16,7 @@ public class ImportedDocument {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private LocalDateTime createdDate;
+    private LocalDateTime lastUpdateTime;
 
 }

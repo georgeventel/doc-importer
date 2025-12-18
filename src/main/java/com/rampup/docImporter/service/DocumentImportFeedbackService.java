@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@RequestMapping("/api/feedback")
 public class DocumentImportFeedbackService {
     private final DocumentFeedbackRepository documentFeedbackRepository;
 
@@ -32,7 +34,7 @@ public class DocumentImportFeedbackService {
     }
 
     public PaginatedResponse<DocumentImportFeedbackDTO> getFeedbackPaginated(int page, int size, SortableFields sortBy) {
-        Pageable pageable = PageRequest.of(page,size, Sort.by(Sort.Direction.DESC, sortBy.getFieldName()));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy.getFieldName()));
         Page<DocumentImportFeedback> feedbackPage = documentFeedbackRepository.findAll(pageable);
 
         PaginatedResponse<DocumentImportFeedbackDTO> response = new PaginatedResponse<>();
