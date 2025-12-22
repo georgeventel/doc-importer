@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @FeignClient(name = "DocumentProvider", url = "${document.source.url}")
 public interface DocumentClient {
-    @GetMapping("/processed")
+    @GetMapping("/processed?size=10000")
     DocumentSourceWrapper getDocuments();
 }
