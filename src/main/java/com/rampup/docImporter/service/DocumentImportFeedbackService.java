@@ -8,6 +8,7 @@ import com.rampup.docImporter.mapper.ImportFeedbackEntityToImportFeedbackDto;
 import com.rampup.docImporter.repository.DocumentFeedbackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +33,8 @@ public class DocumentImportFeedbackService {
     private static final String REDIS_KEY_PREFIX = "doc: feedback:";
     private static final String REDIS_ALL_FEEDBACKS_KEY = "doc:feedbacks:all";
     private final DocumentFeedbackRepository documentFeedbackRepository;
-    private final Optional<RedisTemplate<String, Object>> redisTemplate;
+    @Autowired(required = false)
+    private RedisTemplate<String, Object> redisTemplate;
     @Value("${redis.enabled:false}")
     private boolean redisEnabled;
     @Value("${sql.enabled:true}")
@@ -45,8 +47,7 @@ public class DocumentImportFeedbackService {
         documentImportFeedback.setImportDurationMs(duration);
         if (sqlEnabled)
             documentFeedbackRepository.save(documentImportFeedback);
-        if (redisEnabled && redisTemplate.isPresent()) {
-            RedisTemplate<String, Object> redisTemplate = this.redisTemplate.get();
+        if (redisEnabled) {
             String redisKey = REDIS_KEY_PREFIX + documentImportFeedback.getId();
             redisTemplate.opsForValue().set(redisKey, documentImportFeedback);
             redisTemplate.opsForZSet().add(
@@ -79,8 +80,7 @@ public class DocumentImportFeedbackService {
     public PaginatedResponse<DocumentImportFeedbackDTO> getFeedbackPaginated(int page, int size, SortableFields sortBy) {
         String cacheKey = String.format("feedback: page:%d: size:%d: sort:%s", page, size, sortBy);
 
-        if (redisEnabled && redisTemplate.isPresent()) {
-            RedisTemplate<String, Object> redisTemplate = this.redisTemplate.get();
+        if (redisEnabled) {
             // Check cache first
             try {
                 PaginatedResponse<DocumentImportFeedbackDTO> cached =
@@ -97,8 +97,7 @@ public class DocumentImportFeedbackService {
         PaginatedResponse<DocumentImportFeedbackDTO> response = getFeedbackFromSql(page, size, sortBy);
 
         // Cache the result
-        if (redisEnabled && redisTemplate.isPresent()) {
-            RedisTemplate<String, Object> redisTemplate = this.redisTemplate.get();
+        if (redisEnabled) {
             redisTemplate.opsForValue().set(cacheKey, response, Duration.ofMinutes(5));
         }
 
